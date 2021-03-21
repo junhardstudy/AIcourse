@@ -31,11 +31,12 @@ class State:
         return result
 
     def f(self):
+        #평가 메서드
         return self.h() + self.g()
 
     def h(self):
         # 제 위치에 있지 않은
-        # 타일의 개수 카운
+        # 타일의 개수 카운트
         return sum([1 if self.board[i] != self.goal[i] else 0 for i in range(8)])
 
     def g(self):
@@ -44,10 +45,16 @@ class State:
         return self.moves
 
     def __lt__(self, other):
-    # x < y calls x.__lt__(y) (no override, just original)
+        # x < y calls x.__lt__(y) (no override, just original) magic method
+        # which is invoked when priorityQueue.put() method is called
         return self.f() < other.f()
 
     def __eq__(self, other):
+        # x == y calls x.__eq__(y) magic method which is invoked when
+        # compare operation (==, in) is called
+        # 더불어서, 해당 magic method가 없다면 트리 깊이가 깊어질 때
+        # if state not in closed_queue: 구문 수행시 board list 값을 비교해야 하는데
+        # 해당 magic method가 없다면 객체 자체를 비교하게
         return self.board == other.board
 
 
@@ -90,49 +97,55 @@ def createrandompuzzle():
 
     return puzzletmp
 
+def hwsolve():
+    puzzle = createrandompuzzle()
+    goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
 
-puzzle = createrandompuzzle()
-#puzzle = [1, 2, 3, 0, 4, 6, 7, 5, 8]
-# 문제의 입력 2, 1, 0, 4, 6, 8, 3, 7, 5
+    print("---- initial state ----")
+    open_queue = queue.PriorityQueue()
 
-goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
-print("문제", puzzle)
-open_queue = queue.PriorityQueue()
-'''
-Open Queue를 우선순위 큐로 만드는 이유
+    '''
+    Open Queue를 우선순위 큐로 만드는 이유
 
-우선순위 큐 자료구조는 일반적인 큐와 달리, 데이터의 추가는 어떤 순서로
-해도 상관이 없지만, 제거될 때는 가장 작은 값을 제거하는 특성을 지님
--> 내부적으로 데이터를 정렬된 상태로 보관하는 메커니즘이 내제
+    우선순위 큐 자료구조는 일반적인 큐와 달리, 데이터의 추가는 어떤 순서로
+    해도 상관이 없지만, 제거될 때는 가장 작은 값을 제거하는 특성을 지님
+    -> 내부적으로 데이터를 정렬된 상태로 보관하는 메커니즘이 내제
 
-객체 번호가 가장 낮은것부터 pop하려는 듯
+    현재 magic method __lt__에 의해서 평가함수의 값이 가장 낮은 순으로
+    정렬되도록 되어있음 
 
-'''
-open_queue.put(State(puzzle, goal))
+    그러면 값이 저장될 때부터 오름차순으로 저장되는건가??
+    '''
+    tmp = State(puzzle, goal)
+    print(tmp)
+    open_queue.put(tmp)
 
-closed_queue = []
-moves = 0
-check_tmp = 0;
-while not open_queue.empty():
-    current = open_queue.get()
-    print(current)
+    closed_queue = []
+    moves = 0
 
-    if current.board == goal:
-        print("탐색 성공")
-        break
+    while not open_queue.empty():
+        current = open_queue.get()
 
-    moves = current.moves + 1
+        if current.board == goal:
+            print("탐색 성공")
+            print(current)
+            break
 
-    for state in current.expand(moves):
-        if (state not in closed_queue):
-            open_queue.put(state)
-            check_tmp = check_tmp + 1
-        closed_queue.append(current)
+        moves = current.moves + 1
+
+        for state in current.expand(moves):
+            if (state not in closed_queue):
+                open_queue.put(state)
+                # 큐에 넣을 때, 평가함수 값이 가장 낮은게 바로 다음
+                # 탐색 순위가 되도록 함
+            closed_queue.append(current)
+
+    else:
+        print("탐색 실패")
 
 
+for i in range(0, 3):
+    hwsolve()
 
-    print("counting : " + str(check_tmp));
-else:
-    print("탐색 실패")
 
 

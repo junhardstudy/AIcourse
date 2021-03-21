@@ -23,11 +23,11 @@ num2 = Num(2)
 
 #numList = [num1, num2]
 testQueue = queue.PriorityQueue()
-testQueue.put(num1)
 testQueue.put(num2)
+testQueue.put(num1)
 
 num3 = Num(3)
-testQueue.put(num3)
+
 #num1 < num2
 '''
 num1 != num2
